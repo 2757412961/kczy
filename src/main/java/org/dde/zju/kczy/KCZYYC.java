@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * he main class for scalable mineral prediction algorithm
+ * The main class for parallel mineral prediction algorithm
  */
 public class KCZYYC {
 
@@ -39,7 +39,8 @@ public class KCZYYC {
                 .getOrCreate();
         JavaSparkContext jsc = new JavaSparkContext(ss.sparkContext());
 
-        File fileDir = new File(args[0]);
+        String inputDir = args[0];
+        File fileDir = new File(inputDir);
         if (fileDir.isFile()) {
             logger.error("Input should be a directory, exit");
             System.exit(1);
@@ -56,7 +57,7 @@ public class KCZYYC {
 
         // Phrase 1: Alteration
         // TODO data preparation (Extract band -> Crosstalk -> Radiometric calibration && Atmospheric correction)
-        // ep 1.1: export vnir
+        // step 1.1: export vnir
         JavaRDD<String> vnirFilePathsRDD = filePathsRDD.map(new Function<String, String>() {
             @Override
             public String call(String s) throws Exception {
@@ -66,9 +67,9 @@ public class KCZYYC {
                 String outputFilePath = SSH_TEMP_FILE_DIR + "vnir/" + outputFileName;
                 String sshTempFile = SSH_TEMP_FILE_DIR + "vnir/" + s + ".sh";
                 // prepare cmd
-                StringBuilder sb = new StringBuilder("wine ");
-                sb.append(PROCESS_TOOLSET_DIR + " ExportVNIR.exe ");
-                sb.append(s + " ");
+                StringBuilder sb = new StringBuilder("cd " + PROCESS_TOOLSET_DIR + "; wine ");
+                sb.append("ExportVNIR.exe ");
+                sb.append(inputDir + File.separator + s + " ");
                 sb.append(outputFilePath);
                 String result = ss.runWithOutput(sb.toString(), sshTempFile);
                 logger.info(result);
@@ -86,9 +87,9 @@ public class KCZYYC {
                 String outputFilePath = SSH_TEMP_FILE_DIR + "swir/" + outputFileName;
                 String sshTempFile = SSH_TEMP_FILE_DIR + "swir/" + s + ".sh";
                 // prepare cmd
-                StringBuilder sb = new StringBuilder("wine ");
-                sb.append(PROCESS_TOOLSET_DIR + " ExportSWIR.exe ");
-                sb.append(s + " ");
+                StringBuilder sb = new StringBuilder("cd " + PROCESS_TOOLSET_DIR + "; wine ");
+                sb.append("ExportSWIR.exe ");
+                sb.append(inputDir + File.separator + s + " ");
                 sb.append(outputFilePath);
                 String result = ss.runWithOutput(sb.toString(), sshTempFile);
                 logger.info(result);
@@ -111,5 +112,4 @@ public class KCZYYC {
         ss.close();
         logger.info("======= Aster Mineral Prediction End ======");
     }
-
 }
