@@ -36,8 +36,8 @@ public class KCZYYC {
     private static final String SSH_TEMP_RES_FILE_DIR = "/home/hulinshu/data/temp/res/";
     private static final String PROCESS_TOOLSET_DIR = "/home/hulinshu/tool/extractband_shibian/";
     private static final String FRAME_TOOLSET_DIR = "/home/hulinshu/tool/fengfu_tiantu/";
-    private static final String PROJECT = "PROJCS[\\\"UTM_Zone_41N\\\",\n    GEOGCS[\\\"WGS 84\\\",\n        DATUM[\\\"World Geodetic System 1984\\\",\n            SPHEROID[\"WGS_84\",6378137,298.257223563]],\n        PRIMEM[\\\"Greenwich\\\",0],\n        UNIT[\\\"degree\\\",0.0174532925199433,\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\n    PROJECTION[\\\"Transverse_Mercator\\\"],\n    PARAMETER[\\\"latitude_of_origin\\\",0],\n    PARAMETER[\\\"central_meridian\\\",63],\n    PARAMETER[\\\"scale_factor\\\",0.9996],\n    PARAMETER[\\\"false_easting\\\",500000],\n    PARAMETER[\\\"false_northing\\\",0],\n    UNIT[\\\"metre\\\",1,\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\n    AXIS[\\\"Easting\\\",EAST],\n    AXIS[\\\"Northing\\\",NORTH]]";
-
+//    private static final String PROJECT = "PROJCS[\\\"UTM_Zone_41N\\\",\n    GEOGCS[\\\"WGS 84\\\",\n        DATUM[\\\"World Geodetic System 1984\\\",\n            SPHEROID[\"WGS_84\",6378137,298.257223563]],\n        PRIMEM[\\\"Greenwich\\\",0],\n        UNIT[\\\"degree\\\",0.0174532925199433,\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\n    PROJECTION[\\\"Transverse_Mercator\\\"],\n    PARAMETER[\\\"latitude_of_origin\\\",0],\n    PARAMETER[\\\"central_meridian\\\",63],\n    PARAMETER[\\\"scale_factor\\\",0.9996],\n    PARAMETER[\\\"false_easting\\\",500000],\n    PARAMETER[\\\"false_northing\\\",0],\n    UNIT[\\\"metre\\\",1,\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\n    AXIS[\\\"Easting\\\",EAST],\n    AXIS[\\\"Northing\\\",NORTH]]";
+    private static final String PROJECT = "PROJCS[\\\"UTM_Zone_38N\\\",\\n    GEOGCS[\\\"WGS 84\\\",\\n        DATUM[\\\"World Geodetic System 1984\\\",\\n            SPHEROID[\\\"WGS_84\\\",6378137,298.257223563]],\\n        PRIMEM[\\\"Greenwich\\\",0],\\n        UNIT[\\\"degree\\\",0.0174532925199433,\\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\\n    PROJECTION[\\\"Transverse_Mercator\\\"],\\n    PARAMETER[\\\"latitude_of_origin\\\",0],\\n    PARAMETER[\\\"central_meridian\\\",45],\\n    PARAMETER[\\\"scale_factor\\\",0.9996],\\n    PARAMETER[\\\"false_easting\\\",500000],\\n    PARAMETER[\\\"false_northing\\\",0],\\n    UNIT[\\\"metre\\\",1,\\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\\n    AXIS[\\\"Easting\\\",EAST],\\n    AXIS[\\\"Northing\\\",NORTH]]";
     private static final int RESOLUTION = 500; //分幅分辨率
     private static final int SUBWIDTH = 250; //分幅宽
     private static final int SUBHEIGHT = 200; //分幅高
@@ -129,9 +129,9 @@ public class KCZYYC {
         }).persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // action
-        vnirFilePathsRDD.collect().forEach(logger::info);
-        swirFilePathsRDD.collect().forEach(logger::info);
-        argillicFilePathsRDD.collect().forEach(logger::info);
+//        vnirFilePathsRDD.collect().forEach(logger::info);
+//        swirFilePathsRDD.collect().forEach(logger::info);
+//        argillicFilePathsRDD.collect().forEach(logger::info);
 
         // Phase 2: framing and mapping
         // step 2.1: generate empty frames
@@ -154,28 +154,28 @@ public class KCZYYC {
             String[] split2 = s2.split(" ");
 
             double minX1 = Double.parseDouble(split1[0]);
-            double minY1 = Double.parseDouble(split1[3]);
+            double minY1 = Double.parseDouble(split1[2]);
             double maxX1 = Double.parseDouble(split1[1]);
-            double maxY1 = Double.parseDouble(split1[2]);
+            double maxY1 = Double.parseDouble(split1[3]);
 
             double minX2 = Double.parseDouble(split2[0]);
-            double minY2 = Double.parseDouble(split2[3]);
+            double minY2 = Double.parseDouble(split2[2]);
             double maxX2 = Double.parseDouble(split2[1]);
-            double maxY2 = Double.parseDouble(split2[2]);
+            double maxY2 = Double.parseDouble(split2[3]);
 
             double MIN_X = Double.min(minX1, minX2);
             double MIN_Y = Double.min(minY1, minY2);
             double MAX_X = Double.max(maxX1, maxX2);
             double MAX_Y = Double.max(maxY1, maxY2);
 
-            return MIN_X + " " + MAX_X + " " + MAX_Y + " " + MIN_Y;
+            return MIN_X + " " + MAX_X + " " + MIN_Y + " " + MAX_Y;
         });
 
         String[] boundary = maxBoundary.split(" ");
         double minX = Double.parseDouble(boundary[0]);
-        double minY = Double.parseDouble(boundary[3]);
+        double minY = Double.parseDouble(boundary[2]);
         double maxX = Double.parseDouble(boundary[1]);
-        double maxY = Double.parseDouble(boundary[2]);
+        double maxY = Double.parseDouble(boundary[3]);
 
         // give boundary to generate empty frames
         SecureShell shell = new SecureShell(SSH_IP, SSH_USERNAME, SSH_PASSWORD, SSH_PORT);
@@ -209,10 +209,11 @@ public class KCZYYC {
 
         sb = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
         sb.append("CreateIndexFile.exe ");
-        sb.append(SSH_TEMP_SUB_FILE_DIR + " \"" + PROJECT + "\" " + indexPath);
+        sb.append(SSH_TEMP_SUB_FILE_DIR.substring(0, SSH_TEMP_SUB_FILE_DIR.length()-1) + " \"" + PROJECT + "\" " + indexPath);
         res = shell.runWithOutput(sb.toString(), sshTempFile2);
 
         // step 2.2.2: start to fill map
+        // TODO lock the file filling in
         argillicFilePathsRDD.map((Function<String, String>) s -> {
             // export shell
             SecureShell secureShell = new SecureShell(SSH_IP, SSH_USERNAME, SSH_PASSWORD, SSH_PORT);
@@ -220,7 +221,7 @@ public class KCZYYC {
             // prepare cmd
             StringBuilder stringBuilder = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
             // function name
-            stringBuilder.append("FillMapbySingleFile ");
+            stringBuilder.append("FillMapbySingleFile.exe ");
             stringBuilder.append(s + " " + indexPath);
             String result = secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
             logger.info("FillMapbySingleFile: " + s);
