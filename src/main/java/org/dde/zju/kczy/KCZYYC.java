@@ -6,6 +6,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.storage.StorageLevel;
+import org.dde.zju.kczy.proto.Extent;
 import org.dde.zju.kczy.util.SecureShell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +24,13 @@ import java.util.stream.Collectors;
 public class KCZYYC {
 
     private static final Logger logger = LoggerFactory.getLogger(KCZYYC.class);
-    //    private static final String SSH_IP = "127.0.0.1";
-    private static final String SSH_IP = "120.27.216.174";
+    private static final String SSH_IP = "127.0.0.1";
+    //    private static final String SSH_IP = "120.27.216.174";
     private static final int SSH_PORT = 22;
-    private static final String SSH_USERNAME = "root";
-    private static final String SSH_PASSWORD = "upxTP1oR5SIbeQKG";
+    //    private static final String SSH_USERNAME = "root";
+    //    private static final String SSH_PASSWORD = "upxTP1oR5SIbeQKG";
+    private static final String SSH_USERNAME = "hulinshu";
+    private static final String SSH_PASSWORD = "hu";
     private static final String SSH_REMOTE_FILE_DIR = "/home/hulinshu/data/aster/"; //data in ssh computer(just for test)
     private static final String SSH_TEMP_VNIR_FILE_DIR = "/home/hulinshu/data/temp/vnir/";
     private static final String SSH_TEMP_SWIR_FILE_DIR = "/home/hulinshu/data/temp/swir/";
@@ -36,7 +39,7 @@ public class KCZYYC {
     private static final String SSH_TEMP_RES_FILE_DIR = "/home/hulinshu/data/temp/res/";
     private static final String PROCESS_TOOLSET_DIR = "/home/hulinshu/tool/extractband_shibian/";
     private static final String FRAME_TOOLSET_DIR = "/home/hulinshu/tool/fengfu_tiantu/";
-//    private static final String PROJECT = "PROJCS[\\\"UTM_Zone_41N\\\",\n    GEOGCS[\\\"WGS 84\\\",\n        DATUM[\\\"World Geodetic System 1984\\\",\n            SPHEROID[\"WGS_84\",6378137,298.257223563]],\n        PRIMEM[\\\"Greenwich\\\",0],\n        UNIT[\\\"degree\\\",0.0174532925199433,\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\n    PROJECTION[\\\"Transverse_Mercator\\\"],\n    PARAMETER[\\\"latitude_of_origin\\\",0],\n    PARAMETER[\\\"central_meridian\\\",63],\n    PARAMETER[\\\"scale_factor\\\",0.9996],\n    PARAMETER[\\\"false_easting\\\",500000],\n    PARAMETER[\\\"false_northing\\\",0],\n    UNIT[\\\"metre\\\",1,\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\n    AXIS[\\\"Easting\\\",EAST],\n    AXIS[\\\"Northing\\\",NORTH]]";
+    //    private static final String PROJECT = "PROJCS[\\\"UTM_Zone_41N\\\",\n    GEOGCS[\\\"WGS 84\\\",\n        DATUM[\\\"World Geodetic System 1984\\\",\n            SPHEROID[\"WGS_84\",6378137,298.257223563]],\n        PRIMEM[\\\"Greenwich\\\",0],\n        UNIT[\\\"degree\\\",0.0174532925199433,\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\n    PROJECTION[\\\"Transverse_Mercator\\\"],\n    PARAMETER[\\\"latitude_of_origin\\\",0],\n    PARAMETER[\\\"central_meridian\\\",63],\n    PARAMETER[\\\"scale_factor\\\",0.9996],\n    PARAMETER[\\\"false_easting\\\",500000],\n    PARAMETER[\\\"false_northing\\\",0],\n    UNIT[\\\"metre\\\",1,\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\n    AXIS[\\\"Easting\\\",EAST],\n    AXIS[\\\"Northing\\\",NORTH]]";
     private static final String PROJECT = "PROJCS[\\\"UTM_Zone_38N\\\",\\n    GEOGCS[\\\"WGS 84\\\",\\n        DATUM[\\\"World Geodetic System 1984\\\",\\n            SPHEROID[\\\"WGS_84\\\",6378137,298.257223563]],\\n        PRIMEM[\\\"Greenwich\\\",0],\\n        UNIT[\\\"degree\\\",0.0174532925199433,\\n            AUTHORITY[\\\"EPSG\\\",\\\"9122\\\"]]],\\n    PROJECTION[\\\"Transverse_Mercator\\\"],\\n    PARAMETER[\\\"latitude_of_origin\\\",0],\\n    PARAMETER[\\\"central_meridian\\\",45],\\n    PARAMETER[\\\"scale_factor\\\",0.9996],\\n    PARAMETER[\\\"false_easting\\\",500000],\\n    PARAMETER[\\\"false_northing\\\",0],\\n    UNIT[\\\"metre\\\",1,\\n        AUTHORITY[\\\"EPSG\\\",\\\"9001\\\"]],\\n    AXIS[\\\"Easting\\\",EAST],\\n    AXIS[\\\"Northing\\\",NORTH]]";
     private static final int RESOLUTION = 500; //分幅分辨率
     private static final int SUBWIDTH = 250; //分幅宽
@@ -48,10 +51,10 @@ public class KCZYYC {
 
         // setup spark environment
         SparkSession ss = SparkSession
-            .builder()
-            .appName("mineral_prediction")
-            .master("local[4]")
-            .getOrCreate();
+                .builder()
+                .appName("mineral_prediction")
+                .master("local[4]")
+                .getOrCreate();
         JavaSparkContext jsc = new JavaSparkContext(ss.sparkContext());
 
         String inputDir = args[0]; //local data dir
@@ -136,7 +139,7 @@ public class KCZYYC {
         // Phase 2: framing and mapping
         // step 2.1: generate empty frames
         // calculate boundary
-        JavaRDD<String> boundingBoxRDD = argillicFilePathsRDD.map((Function<String, String>) s -> {
+        JavaRDD<Extent> boundingBoxRDD = argillicFilePathsRDD.map((Function<String, Extent>) s -> {
             // get boundingBox
             SecureShell secureShell = new SecureShell(SSH_IP, SSH_USERNAME, SSH_PASSWORD, SSH_PORT);
             String sshTempFile = s + ".sh";
@@ -146,46 +149,20 @@ public class KCZYYC {
             // return minx maxx maxy miny
             String boundingBox = secureShell.runWithOutput(sb.toString(), sshTempFile);
             logger.info(boundingBox);
-            return boundingBox;
+            return new Extent(boundingBox);
         });
 
-        String maxBoundary = boundingBoxRDD.reduce((Function2<String, String, String>) (s, s2) -> {
-            String[] split1 = s.split(" ");
-            String[] split2 = s2.split(" ");
-
-            double minX1 = Double.parseDouble(split1[0]);
-            double minY1 = Double.parseDouble(split1[2]);
-            double maxX1 = Double.parseDouble(split1[1]);
-            double maxY1 = Double.parseDouble(split1[3]);
-
-            double minX2 = Double.parseDouble(split2[0]);
-            double minY2 = Double.parseDouble(split2[2]);
-            double maxX2 = Double.parseDouble(split2[1]);
-            double maxY2 = Double.parseDouble(split2[3]);
-
-            double MIN_X = Double.min(minX1, minX2);
-            double MIN_Y = Double.min(minY1, minY2);
-            double MAX_X = Double.max(maxX1, maxX2);
-            double MAX_Y = Double.max(maxY1, maxY2);
-
-            return MIN_X + " " + MAX_X + " " + MIN_Y + " " + MAX_Y;
-        });
-
-        String[] boundary = maxBoundary.split(" ");
-        double minX = Double.parseDouble(boundary[0]);
-        double minY = Double.parseDouble(boundary[2]);
-        double maxX = Double.parseDouble(boundary[1]);
-        double maxY = Double.parseDouble(boundary[3]);
+        Extent maxBoundary = boundingBoxRDD.reduce(Extent::add);
 
         // give boundary to generate empty frames
         SecureShell shell = new SecureShell(SSH_IP, SSH_USERNAME, SSH_PASSWORD, SSH_PORT);
         String sshTempFile = SSH_TEMP_ARGILLIC_FILE_DIR + "generate.sh";
         StringBuilder sb = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
         sb.append("GetMapSubFileList.exe ");
-        sb.append(minX + " " + maxX + " " + maxY + " " + minY + " " + RESOLUTION + " " + SUBWIDTH + " " + SUBHEIGHT);
+        sb.append(maxBoundary.toShellString() + " " + RESOLUTION + " " + SUBWIDTH + " " + SUBHEIGHT);
         String res = shell.runWithOutput(sb.toString(), sshTempFile); // get emptyframes filenames;
         List<String> subFileList = Arrays.asList(res.split(" "))
-            .stream().filter(f -> f.endsWith(".TIF")).collect(Collectors.toList());
+                .stream().filter(f -> f.endsWith(".TIF")).collect(Collectors.toList());
         JavaRDD<String> subFilesRDD = jsc.parallelize(subFileList).persist(StorageLevel.MEMORY_AND_DISK_SER());
         subFilesRDD.map((Function<String, String>) s -> {
             // export shell
@@ -195,8 +172,8 @@ public class KCZYYC {
             StringBuilder stringBuilder = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
             // function name
             stringBuilder.append("CreateSubImg ");
-            stringBuilder.append(minX + " " + maxY + " " + RESOLUTION + " " + SUBWIDTH + " " + SUBHEIGHT + " "
-                + "\"" + PROJECT + "\"" + " " + SSH_TEMP_SUB_FILE_DIR + " " + s);
+            stringBuilder.append(maxBoundary.getMinx() + " " + maxBoundary.getMaxy() + " " + RESOLUTION + " " + SUBWIDTH + " " + SUBHEIGHT + " "
+                    + "\"" + PROJECT + "\"" + " " + SSH_TEMP_SUB_FILE_DIR + " " + s);
             secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
             logger.info("CreateSubImg: " + s);
             return s;
@@ -209,7 +186,7 @@ public class KCZYYC {
 
         sb = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
         sb.append("CreateIndexFile.exe ");
-        sb.append(SSH_TEMP_SUB_FILE_DIR.substring(0, SSH_TEMP_SUB_FILE_DIR.length()-1) + " \"" + PROJECT + "\" " + indexPath);
+        sb.append(SSH_TEMP_SUB_FILE_DIR.substring(0, SSH_TEMP_SUB_FILE_DIR.length() - 1) + " \"" + PROJECT + "\" " + indexPath);
         res = shell.runWithOutput(sb.toString(), sshTempFile2);
 
         // step 2.2.2: start to fill map
