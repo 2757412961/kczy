@@ -132,9 +132,9 @@ public class KCZYYC {
         }).persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // action
-//        vnirFilePathsRDD.collect().forEach(logger::info);
-//        swirFilePathsRDD.collect().forEach(logger::info);
-//        argillicFilePathsRDD.collect().forEach(logger::info);
+        vnirFilePathsRDD.collect().forEach(logger::info);
+        swirFilePathsRDD.collect().forEach(logger::info);
+        argillicFilePathsRDD.collect().forEach(logger::info);
 
         // Phase 2: framing and mapping
         // step 2.1: generate empty frames
@@ -171,11 +171,11 @@ public class KCZYYC {
             // prepare cmd
             StringBuilder stringBuilder = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
             // function name
-            stringBuilder.append("CreateSubImg ");
+            stringBuilder.append("CreateSubImg.exe ");
             stringBuilder.append(maxBoundary.getMinx() + " " + maxBoundary.getMaxy() + " " + RESOLUTION + " " + SUBWIDTH + " " + SUBHEIGHT + " "
                     + "\"" + PROJECT + "\"" + " " + SSH_TEMP_SUB_FILE_DIR + " " + s);
-            secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
-            logger.info("CreateSubImg: " + s);
+            String result = secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
+            logger.info("CreateSubImg: " + result);
             return s;
         }).collect().forEach(logger::info);
 
@@ -188,6 +188,7 @@ public class KCZYYC {
         sb.append("CreateIndexFile.exe ");
         sb.append(SSH_TEMP_SUB_FILE_DIR.substring(0, SSH_TEMP_SUB_FILE_DIR.length() - 1) + " \"" + PROJECT + "\" " + indexPath);
         res = shell.runWithOutput(sb.toString(), sshTempFile2);
+        logger.info("generate fill-in index:" + res);
 
         // step 2.2.2: start to fill map
         // TODO lock the file filling in
@@ -201,7 +202,7 @@ public class KCZYYC {
             stringBuilder.append("FillMapbySingleFile.exe ");
             stringBuilder.append(s + " " + indexPath);
             String result = secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
-            logger.info("FillMapbySingleFile: " + s);
+            logger.info("FillMapbySingleFile: " + result);
             return s;
         }).collect().forEach(logger::info);
 
@@ -215,10 +216,10 @@ public class KCZYYC {
             // prepare cmd
             StringBuilder stringBuilder = new StringBuilder("cd " + FRAME_TOOLSET_DIR + "; wine ");
             // function name
-            stringBuilder.append("GetResbySingleFile ");
+            stringBuilder.append("GetResbySingleFile.exe ");
             stringBuilder.append(TWO_VALUE_THRESHOLD + " " + inputFilePath + " " + outputFilePath);
-            secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
-            logger.info("GetResbySingleFile: " + s);
+            String result = secureShell.runWithOutput(stringBuilder.toString(), sshTempFile1);
+            logger.info("GetResbySingleFile: " + result);
             return s;
         }).collect().forEach(logger::info);
 
