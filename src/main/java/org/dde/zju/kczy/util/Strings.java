@@ -12,8 +12,9 @@ import java.util.UUID;
  * @version 1.0, 2021-05-31
  */
 public final class Strings {
+
     /**
-     * 字符串有值且不为空字符串
+  * 字符串有值且不为空字符串
      *
      * @param origin 检验字符串
      * @return 是否有值且不为空字符串

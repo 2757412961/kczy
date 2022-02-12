@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-import static org.dde.zju.kczy.proto.Constant.EXTENT_SEPORATOR;
+import static org.dde.zju.base.Constant.EXTENT_SEPORATOR;
 
 @Getter
 @Setter
