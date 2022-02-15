@@ -47,19 +47,19 @@ public class BaseObject {
             field.setAccessible(true);
             Class<?> fieldType = field.getType();
             if (byte.class.equals(fieldType) || Byte.class.equals(fieldType)) {
-                field.setByte(this, Byte.parseByte(values[i]));
+                field.setByte(this, Byte.parseByte(modifyEmptyNumeric(values[i])));
             } else if (short.class.equals(fieldType) || Short.class.equals(fieldType)) {
-                field.setShort(this, Short.parseShort(values[i]));
+                field.setShort(this, Short.parseShort(modifyEmptyNumeric(values[i])));
             } else if (int.class.equals(fieldType) || Integer.class.equals(fieldType)) {
-                field.setInt(this, Integer.parseInt(values[i]));
+                field.setInt(this, Integer.parseInt(modifyEmptyNumeric(values[i])));
             } else if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
-                field.setLong(this, Long.parseLong(values[i]));
+                field.setLong(this, Long.parseLong(modifyEmptyNumeric(values[i])));
             } else if (float.class.equals(fieldType) || Float.class.equals(fieldType)) {
-                field.setFloat(this, Float.parseFloat(values[i]));
+                field.setFloat(this, Float.parseFloat(modifyEmptyNumeric(values[i])));
             } else if (double.class.equals(fieldType) || Double.class.equals(fieldType)) {
-                field.setDouble(this, Double.parseDouble(values[i]));
+                field.setDouble(this, Double.parseDouble(modifyEmptyNumeric(values[i])));
             } else if (char.class.equals(fieldType) || Character.class.equals(fieldType)) {
-                field.setChar(this, values[i].charAt(0));
+                field.setChar(this, modifyEmptyChar(values[i]));
             } else if (boolean.class.equals(fieldType) || Boolean.class.equals(fieldType)) {
                 field.setBoolean(this, Boolean.parseBoolean(values[i]));
             } else if (String.class.equals(fieldType)) {
@@ -69,4 +69,20 @@ public class BaseObject {
             }
         }
     }
+
+    public String modifyEmptyNumeric(String numericStr) {
+        if (numericStr == null || numericStr.length() == 0) {
+            return "0";
+        }
+        return numericStr;
+    }
+
+    public char modifyEmptyChar(String numericStr) {
+        if (numericStr == null || numericStr.length() == 0) {
+            return ' ';
+        }
+        return numericStr.charAt(0);
+    }
+
+
 }

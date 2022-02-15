@@ -69,9 +69,9 @@ public class LoadToPg {
                     pstmt.setString(12, di.getSensor());
                     pstmt.setString(13, di.getBoundary());
                     pstmt.setDouble(14, di.getCloud());
-                    pstmt.setString(15, di.getOwner());
-                    pstmt.setString(16, di.getPrivilege());
-                    pstmt.setBoolean(17, di.isHasData());
+                    pstmt.setString(15, "ADMIN");
+                    pstmt.setString(16, "PUBLIC");
+                    pstmt.setBoolean(17, false);
                     itemNum++;
                     try{
                         int update = pstmt.executeUpdate();

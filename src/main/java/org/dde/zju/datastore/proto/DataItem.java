@@ -31,9 +31,9 @@ public class DataItem extends BaseObject implements Serializable {
     private String sensor;
     private String boundary;
     private double cloud;
-    private String owner;
-    private String privilege;
-    private boolean hasData;
+//    private String owner;
+//    private String privilege;
+//    private boolean hasData;
 
     public DataItem(String str) {
         try {
