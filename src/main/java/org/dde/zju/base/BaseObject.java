@@ -39,23 +39,33 @@ public class BaseObject {
 
     public void convertFromStr(String str, boolean callSuper) throws IllegalAccessException {
         List<Field> allFields = FieldOperator.getAllFields(this.getClass(), callSuper);
-        String[] values = str.split(Constant.STRING_SEPORATOR);
+        // String[] values = str.split(Constant.STRING_SEPORATOR);
+        String[] values = str.split(",(?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
         if (allFields.size() != values.length) throw new RuntimeException("Value size should be equal to Field Size");
-        for(int i=0; i<allFields.size(); i++) {
+        for (int i = 0; i < allFields.size(); i++) {
             Field field = allFields.get(i);
             field.setAccessible(true);
-            if (String.class.equals(field.getDeclaringClass())) {
-                field.set(this, values[i]);
-            } else if (Double.class.equals(field.getDeclaringClass())) {
-                field.setDouble(this, Double.parseDouble(values[i]));
-            } else if (Integer.class.equals(field.getDeclaringClass())) {
+            Class<?> fieldType = field.getType();
+            if (byte.class.equals(fieldType) || Byte.class.equals(fieldType)) {
+                field.setByte(this, Byte.parseByte(values[i]));
+            } else if (short.class.equals(fieldType) || Short.class.equals(fieldType)) {
+                field.setShort(this, Short.parseShort(values[i]));
+            } else if (int.class.equals(fieldType) || Integer.class.equals(fieldType)) {
                 field.setInt(this, Integer.parseInt(values[i]));
-            } else if (Long.class.equals(field.getDeclaringClass())) {
+            } else if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
                 field.setLong(this, Long.parseLong(values[i]));
-            } else if (Boolean.class.equals(field.getDeclaringClass())) {
+            } else if (float.class.equals(fieldType) || Float.class.equals(fieldType)) {
+                field.setFloat(this, Float.parseFloat(values[i]));
+            } else if (double.class.equals(fieldType) || Double.class.equals(fieldType)) {
+                field.setDouble(this, Double.parseDouble(values[i]));
+            } else if (char.class.equals(fieldType) || Character.class.equals(fieldType)) {
+                field.setChar(this, values[i].charAt(0));
+            } else if (boolean.class.equals(fieldType) || Boolean.class.equals(fieldType)) {
                 field.setBoolean(this, Boolean.parseBoolean(values[i]));
+            } else if (String.class.equals(fieldType)) {
+                field.set(this, values[i]);
             } else {
-                throw new IllegalStateException("Unsupport class type: " + field.getDeclaringClass());
+                throw new IllegalStateException("Unsupport class type: " + fieldType);
             }
         }
     }

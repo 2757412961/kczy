@@ -21,7 +21,7 @@ public class DataItem extends BaseObject implements Serializable {
     private String dataUrl;
     private String level;
     private String loadInfo;
-    private double resolution;
+    private String resolution;
     private String imageUrl;
     private long timestamp;
     private String imageId;
@@ -36,7 +36,11 @@ public class DataItem extends BaseObject implements Serializable {
     private boolean hasData;
 
     public DataItem(String str) {
-        this.convertFromStr(str);
+        try {
+            this.convertFromStr(str);
+        } catch (Exception e) {
+
+        }
     }
 
 }
