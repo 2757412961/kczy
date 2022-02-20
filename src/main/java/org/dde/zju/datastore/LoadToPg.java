@@ -18,9 +18,12 @@ import java.util.List;
 public class LoadToPg {
 
     private static final Logger logger = LoggerFactory.getLogger(KCZYYC.class);
-    private static final String PG_URL = "jdbc:postgresql://pgm-bp18r1dq5gq2b8w7po.pg.rds.aliyuncs.com:1921/fuxi?TimeZone=Asia/Shanghai";
-    private static final String USERNAME = "deepengine_1";
-    private static final String PASSWORD = "upxTP1oR5SIbeQKG";
+//    private static final String PG_URL = "jdbc:postgresql://pgm-bp18r1dq5gq2b8w7po.pg.rds.aliyuncs.com:1921/fuxi?TimeZone=Asia/Shanghai";
+//    private static final String USERNAME = "deepengine_1";
+//    private static final String PASSWORD = "upxTP1oR5SIbeQKG";
+    private static final String PG_URL = "jdbc:postgresql://gp-bp194h35k6cyg89e5o-master.gpdb.rds.aliyuncs.com:5432/fuxi?TimeZone=Asia/Shanghai";
+    private static final String USERNAME = "zjugis";
+    private static final String PASSWORD = "1qaz@WSX";
     private static final String TABLE_NAME = "fx_raster";
 
     public static void main(String[] args) {
@@ -30,7 +33,7 @@ public class LoadToPg {
         SparkSession ss = SparkSession
                 .builder()
                 .appName("load data to pg in parallel")
-                .master("local[8]")
+                .master("local[16]")
                 .getOrCreate();
         JavaSparkContext jsc = new JavaSparkContext(ss.sparkContext());
 
